@@ -1,6 +1,6 @@
 <?php
 
-use Valet\Brew;
+use Valet\PackageManager;
 use Valet\PhpFpm;
 use Valet\CommandLine;
 use Illuminate\Container\Container;

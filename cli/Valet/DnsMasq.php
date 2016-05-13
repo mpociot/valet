@@ -16,12 +16,12 @@ class DnsMasq
     /**
      * Create a new DnsMasq instance.
      *
-     * @param  Brew  $brew
+     * @param  PackageManager  $brew
      * @param  CommandLine  $cli
      * @param  Filesystem  $files
      * @return void
      */
-    function __construct(Brew $brew, CommandLine $cli, Filesystem $files)
+    function __construct(PackageManager $brew, CommandLine $cli, Filesystem $files)
     {
         $this->cli = $cli;
         $this->brew = $brew;

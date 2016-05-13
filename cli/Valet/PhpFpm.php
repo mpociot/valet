@@ -8,7 +8,7 @@ use Symfony\Component\Process\Process;
 
 class PhpFpm
 {
-    public $brew, $cli, $files;
+    public $packageManager, $cli, $files;
 
     public $taps = [
         'homebrew/dupes', 'homebrew/versions', 'homebrew/homebrew-php'
@@ -17,15 +17,15 @@ class PhpFpm
     /**
      * Create a new PHP FPM class instance.
      *
-     * @param  Brew  $brew
+     * @param  PackageManager  $packageManager
      * @param  CommandLine  $cli
      * @param  Filesystem  $files
      * @return void
      */
-    public function __construct(Brew $brew, CommandLine $cli, Filesystem $files)
+    public function __construct(PackageManager $packageManager, CommandLine $cli, Filesystem $files)
     {
         $this->cli = $cli;
-        $this->brew = $brew;
+        $this->packageManager = $packageManager;
         $this->files = $files;
     }
 
@@ -36,17 +36,23 @@ class PhpFpm
      */
     public function install()
     {
-        if (! $this->brew->installed('php70') &&
-            ! $this->brew->installed('php56') &&
-            ! $this->brew->installed('php55')) {
-            $this->brew->ensureInstalled('php70', $this->taps);
+        if (isWindows()) {
+            if (! $this->packageManager->installed('php')) {
+                $this->packageManager->ensureInstalled('php', $this->taps);
+            }
+        } else {
+            if (! $this->packageManager->installed('php70') &&
+                ! $this->packageManager->installed('php56') &&
+                ! $this->packageManager->installed('php55')) {
+                $this->packageManager->ensureInstalled('php70', $this->taps);
+            }
+
+            $this->files->ensureDirExists('/usr/local/var/log', user());
+
+            $this->updateConfiguration();
+
+            $this->restart();
         }
-
-        $this->files->ensureDirExists('/usr/local/var/log', user());
-
-        $this->updateConfiguration();
-
-        $this->restart();
     }
 
     /**
@@ -73,7 +79,7 @@ class PhpFpm
     {
         $this->stop();
 
-        $this->brew->restartLinkedPhp();
+        $this->packageManager->restartLinkedPhp();
     }
 
     /**
@@ -83,7 +89,7 @@ class PhpFpm
      */
     public function stop()
     {
-        $this->brew->stopService('php55', 'php56', 'php70');
+        $this->packageManager->stopService('php55', 'php56', 'php70');
     }
 
     /**
@@ -93,11 +99,11 @@ class PhpFpm
      */
     public function fpmConfigPath()
     {
-        if ($this->brew->linkedPhp() === 'php70') {
+        if ($this->packageManager->linkedPhp() === 'php70') {
             return '/usr/local/etc/php/7.0/php-fpm.d/www.conf';
-        } elseif ($this->brew->linkedPhp() === 'php56') {
+        } elseif ($this->packageManager->linkedPhp() === 'php56') {
             return '/usr/local/etc/php/5.6/php-fpm.conf';
-        } elseif ($this->brew->linkedPhp() === 'php55') {
+        } elseif ($this->packageManager->linkedPhp() === 'php55') {
             return '/usr/local/etc/php/5.5/php-fpm.conf';
         } else {
             throw new DomainException('Unable to find php-fpm config.');

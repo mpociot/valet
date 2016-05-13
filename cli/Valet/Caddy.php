@@ -43,7 +43,7 @@ class Caddy
     {
         $this->files->putAsUser(
             VALET_HOME_PATH.'/Caddyfile',
-            str_replace('VALET_HOME_PATH', VALET_HOME_PATH, $this->files->get(__DIR__.'/../stubs/Caddyfile'))
+            str_replace('VALET_HOME_PATH', str_replace('\\','/',VALET_HOME_PATH), $this->files->get(__DIR__.'/../stubs/Caddyfile'))
         );
     }
 
@@ -70,14 +70,17 @@ class Caddy
      */
     function installCaddyDaemon()
     {
-        $contents = str_replace(
-            'VALET_PATH', $this->files->realpath(__DIR__.'/../../'),
-            $this->files->get(__DIR__.'/../stubs/daemon.plist')
-        );
+        if (!isWindows())
+        {
+            $contents = str_replace(
+                'VALET_PATH', $this->files->realpath(__DIR__.'/../../'),
+                $this->files->get(__DIR__.'/../stubs/daemon.plist')
+            );
 
-        $this->files->put(
-            $this->daemonPath, str_replace('VALET_HOME_PATH', VALET_HOME_PATH, $contents)
-        );
+            $this->files->put(
+                $this->daemonPath, str_replace('VALET_HOME_PATH', VALET_HOME_PATH, $contents)
+            );
+        }
     }
 
     /**
@@ -99,7 +102,9 @@ class Caddy
      */
     function stop()
     {
-        $this->cli->quietly('sudo launchctl unload '.$this->daemonPath);
+        if (!isWindows()) {
+            $this->cli->quietly('sudo launchctl unload '.$this->daemonPath);
+        }
     }
 
     /**

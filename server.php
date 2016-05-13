@@ -3,8 +3,11 @@
 /**
  * Define the user's "~/.valet" path.
  */
-
-define('VALET_HOME_PATH', posix_getpwuid(fileowner(__FILE__))['dir'].'/.valet');
+if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+    define('VALET_HOME_PATH', getenv('USERPROFILE').'/.valet');
+} else {
+    define('VALET_HOME_PATH', posix_getpwuid(fileowner(__FILE__))['dir'].'/.valet');
+}
 
 /**
  * Show the Valet 404 "Not Found" page.

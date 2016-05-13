@@ -1,6 +1,6 @@
 <?php
 
-use Valet\Brew;
+use Valet\PackageManager;
 use Valet\DnsMasq;
 use Valet\Filesystem;
 use Valet\CommandLine;
@@ -28,10 +28,10 @@ class DnsMasqTest extends PHPUnit_Framework_TestCase
 
     public function test_install_installs_and_places_configuration_files_in_proper_locations()
     {
-        $brew = Mockery::mock(Brew::class);
+        $brew = Mockery::mock(PackageManager::class);
         $brew->shouldReceive('ensureInstalled')->once()->with('dnsmasq');
         $brew->shouldReceive('restartService')->once()->with('dnsmasq');
-        swap(Brew::class, $brew);
+        swap(PackageManager::class, $brew);
 
         $dnsMasq = resolve(StubForCreatingCustomDnsMasqConfigFiles::class);
 
@@ -54,7 +54,7 @@ conf-file='.__DIR__.'/output/custom-dnsmasq.conf
     {
         $cli = Mockery::mock(CommandLine::class);
         $cli->shouldReceive('quietly')->with('rm /etc/resolver/old');
-        $dnsMasq = Mockery::mock(DnsMasq::class.'[install]', [resolve(Brew::class), $cli, new Filesystem]);
+        $dnsMasq = Mockery::mock(DnsMasq::class.'[install]', [resolve(PackageManager::class), $cli, new Filesystem]);
         $dnsMasq->shouldReceive('install')->with('new');
         $dnsMasq->updateDomain('old', 'new');
     }

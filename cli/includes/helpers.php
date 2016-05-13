@@ -6,7 +6,7 @@ use Symfony\Component\Process\Process;
 /**
  * Define the ~/.valet path as a constant.
  */
-define('VALET_HOME_PATH', $_SERVER['HOME'].'/.valet');
+define('VALET_HOME_PATH', isset($_SERVER['HOME']) ? $_SERVER['HOME'] : $_SERVER['HOMEDRIVE'].$_SERVER['HOMEPATH'].'/.valet');
 
 /**
  * Output the given text to the console.
@@ -127,9 +127,23 @@ function tap($value, callable $callback)
  */
 function user()
 {
+    if (isWindows()) {
+        return null;
+    }
+    
     if (! isset($_SERVER['SUDO_USER'])) {
         return $_SERVER['USER'];
     }
 
     return $_SERVER['SUDO_USER'];
+}
+
+/**
+ * Determine if it's a Windows environment
+ *
+ * @return bool
+ */
+function isWindows()
+{
+    return defined('PHP_WINDOWS_VERSION_BUILD');
 }

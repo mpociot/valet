@@ -42,9 +42,12 @@ $app->command('install', function () {
     PhpFpm::install();
     DnsMasq::install();
     Caddy::restart();
-    Valet::symlinkToUsersBin();
-    Brew::createSudoersEntry();
-    Valet::createSudoersEntry();
+    
+    if (!isWindows()) {
+        Valet::symlinkToUsersBin();
+        PackageManager::createSudoersEntry();
+        Valet::createSudoersEntry();
+    }
 
     output(PHP_EOL.'<info>Valet installed successfully!</info>');
 })->descriptions('Install the Valet services');
