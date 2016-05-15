@@ -40,7 +40,9 @@ $app->command('install', function () {
     Configuration::install();
     Caddy::install();
     PhpFpm::install();
-    //DnsMasq::install();
+    if (!isWindows()) {
+        DnsMasq::install();
+    }
     Caddy::restart();
     
     if (!isWindows()) {
@@ -67,7 +69,11 @@ $app->command('domain [domain]', function ($domain = null) {
     Configuration::updateKey('domain', $domain);
 
     Site::resecureForNewDomain($oldDomain, $domain);
-    PhpFpm::restart();
+
+    if (!isWindows()) {
+        PhpFpm::restart();
+    }
+
     Caddy::restart();
 
     info('Your Valet domain has been updated to ['.$domain.'].');
@@ -124,7 +130,9 @@ $app->command('secure [domain]', function ($domain = null) {
 
     Site::secure($url);
 
-    PhpFpm::restart();
+    if (!isWindows()) {
+        PhpFpm::restart();
+    }
 
     Caddy::restart();
 
@@ -136,7 +144,9 @@ $app->command('unsecure [domain]', function ($domain = null) {
 
     Site::unsecure($url);
 
-    PhpFpm::restart();
+    if (!isWindows()) {
+        PhpFpm::restart();
+    }
 
     Caddy::restart();
 
@@ -208,7 +218,9 @@ $app->command('fetch-share-url', function () {
  * Start the daemon services.
  */
 $app->command('start', function () {
-    PhpFpm::restart();
+    if (!isWindows()) {
+        PhpFpm::restart();
+    }
 
     Caddy::restart();
 
@@ -219,7 +231,9 @@ $app->command('start', function () {
  * Restart the daemon services.
  */
 $app->command('restart', function () {
-    PhpFpm::restart();
+    if (!isWindows()) {
+        PhpFpm::restart();
+    }
 
     Caddy::restart();
 
@@ -230,7 +244,9 @@ $app->command('restart', function () {
  * Stop the daemon services.
  */
 $app->command('stop', function () {
-    PhpFpm::stop();
+    if (!isWindows()) {
+        PhpFpm::stop();
+    }
 
     Caddy::stop();
 
