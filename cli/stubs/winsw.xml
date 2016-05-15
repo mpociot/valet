@@ -1,0 +1,9 @@
+<service>
+    <id>laravel_valetServer</id>
+    <name>Laravel Valet</name>
+    <description>The Laravel Valet server</description>
+    <workingdirectory>VALET_PATH</workingdirectory>
+    <executable>VALET_PATH/bin/caddy_x86.exe</executable>
+    <arguments>--conf=VALET_HOME_PATH/Caddyfile</arguments>
+    <logmode>none</logmode>
+</service>

@@ -27,6 +27,11 @@ class Configuration
         $this->createDriversDirectory();
         $this->createSitesDirectory();
         $this->createExtensionsDirectory();
+
+        if (isWindows()) {
+            $this->createServiceDirectory();
+        }
+
         $this->writeBaseConfiguration();
 
         $this->files->chown($this->path(), user());
@@ -59,6 +64,16 @@ class Configuration
             $driversDirectory.'/SampleValetDriver.php',
             $this->files->get(__DIR__.'/../stubs/SampleValetDriver.php')
         );
+    }
+
+    /**
+     * Create the Valet windows-service directory.
+     *
+     * @return void
+     */
+    function createServiceDirectory()
+    {
+        $this->files->ensureDirExists(VALET_HOME_PATH.'/Service', user());
     }
 
     /**

@@ -4,7 +4,7 @@
  * Define the user's "~/.valet" path.
  */
 if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-    define('VALET_HOME_PATH', getenv('USERPROFILE').'/.valet');
+    ﻿define('VALET_HOME_PATH', str_replace('\\','/',$_SERVER['BASE']).'/../');
 } else {
     define('VALET_HOME_PATH', posix_getpwuid(fileowner(__FILE__))['dir'].'/.valet');
 }

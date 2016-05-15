@@ -40,7 +40,7 @@ $app->command('install', function () {
     Configuration::install();
     Caddy::install();
     PhpFpm::install();
-    DnsMasq::install();
+    //DnsMasq::install();
     Caddy::restart();
     
     if (!isWindows()) {

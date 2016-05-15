@@ -51,6 +51,20 @@ class CommandLine
         return $this->runCommand($command, $onError);
     }
 
+
+    /**
+     * Run the given command as the non-root user in the given working directory.
+     *
+     * @param  string $command
+     * @param  string $cwd
+     * @param  callable $onError
+     * @return string
+     */
+    public function runInPath($command, $cwd, callable $onError = null)
+    {
+        return $this->runCommand($command, $onError, $cwd);
+    }
+
     /**
      * Run the given command.
      *
@@ -66,15 +80,16 @@ class CommandLine
     /**
      * Run the given command.
      *
-     * @param  string  $command
+     * @param  string $command
      * @param  callable $onError
+     * @param  string $cwd
      * @return string
      */
-    protected function runCommand($command, callable $onError = null)
+    protected function runCommand($command, callable $onError = null, $cwd = null)
     {
         $onError = $onError ?: function () {};
 
-        $process = new Process($command);
+        $process = new Process($command, $cwd);
 
         $processOutput = '';
         $process->setTimeout(null)->run(function ($type, $line) use (&$processOutput) {

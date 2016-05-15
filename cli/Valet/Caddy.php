@@ -41,10 +41,18 @@ class Caddy
      */
     function installCaddyFile()
     {
-        $this->files->putAsUser(
-            VALET_HOME_PATH.'/Caddyfile',
-            str_replace('VALET_HOME_PATH', str_replace('\\','/',VALET_HOME_PATH), $this->files->get(__DIR__.'/../stubs/Caddyfile'))
-        );
+        if (!isWindows()) {
+            $this->files->putAsUser(
+                VALET_HOME_PATH.'/Caddyfile',
+                str_replace('VALET_HOME_PATH', str_replace('\\','/',VALET_HOME_PATH), $this->files->get(__DIR__.'/../stubs/Caddyfile'))
+            );
+        } else {
+            $phpCGI = str_replace(PHP_EOL, '', $this->cli->run('where php-cgi'));
+            $this->files->putAsUser(
+                VALET_HOME_PATH.'/Caddyfile',
+                str_replace(['VALET_HOME_PATH','PHP_CGI'], [str_replace('\\','/',VALET_HOME_PATH), $phpCGI], $this->files->get(__DIR__.'/../stubs/WindowsCaddyfile'))
+            );
+        }
     }
 
     /**
@@ -73,13 +81,31 @@ class Caddy
         if (!isWindows())
         {
             $contents = str_replace(
-                'VALET_PATH', $this->files->realpath(__DIR__.'/../../'),
+                'VALET_PATH', str_replace('\\','/',$this->files->realpath(__DIR__.'/../../')),
                 $this->files->get(__DIR__.'/../stubs/daemon.plist')
             );
 
             $this->files->put(
                 $this->daemonPath, str_replace('VALET_HOME_PATH', VALET_HOME_PATH, $contents)
             );
+        } else {
+            $contents = str_replace(
+                'VALET_PATH', str_replace('\\','/',$this->files->realpath(__DIR__.'/../../')),
+                $this->files->get(__DIR__.'/../stubs/winsw.xml')
+            );
+
+            $this->files->put(
+                VALET_HOME_PATH.'/Service/caddy.xml', str_replace('VALET_HOME_PATH', str_replace('\\','/',VALET_HOME_PATH), $contents)
+            );
+
+            $this->files->put(
+                VALET_HOME_PATH.'/Service/caddy.exe.config', $this->files->get(__DIR__.'/../stubs/winsw.config')
+            );
+
+            $this->files->copy(__DIR__.'/../../bin/winsw.exe', VALET_HOME_PATH.'/Service/caddy.exe');
+
+            $cwd = $this->files->realpath(__DIR__.'/../../').'/bin';
+            $this->cli->runInPath('elevate.exe '.VALET_HOME_PATH.'\Service\caddy.exe install', $cwd);
         }
     }
 
@@ -90,9 +116,14 @@ class Caddy
      */
     function restart()
     {
-        $this->cli->quietly('sudo launchctl unload '.$this->daemonPath);
+        if (!isWindows()) {
+            $this->cli->quietly('sudo launchctl unload '.$this->daemonPath);
 
-        $this->cli->quietly('sudo launchctl load '.$this->daemonPath);
+            $this->cli->quietly('sudo launchctl load '.$this->daemonPath);
+        } else {
+            $cwd = $this->files->realpath(__DIR__.'/../../').'/bin';
+            $this->cli->runInPath('elevate.exe '.VALET_HOME_PATH.'\Service\caddy.exe restart', $cwd);
+        }
     }
 
     /**
@@ -104,6 +135,9 @@ class Caddy
     {
         if (!isWindows()) {
             $this->cli->quietly('sudo launchctl unload '.$this->daemonPath);
+        } else {
+            $cwd = $this->files->realpath(__DIR__.'/../../').'/bin';
+            $this->cli->runInPath('elevate.exe '.VALET_HOME_PATH.'\Service\caddy.exe stop', $cwd);
         }
     }
 
@@ -116,6 +150,11 @@ class Caddy
     {
         $this->stop();
 
-        $this->files->unlink($this->daemonPath);
+        if (!isWindows()) {
+            $this->files->unlink($this->daemonPath);
+        } else {
+            $cwd = $this->files->realpath(__DIR__.'/../../').'/bin';
+            $this->cli->runInPath('elevate.exe '.VALET_HOME_PATH.'\Service\caddy.exe uninstall', $cwd);
+        }
     }
 }
